@@ -67,8 +67,8 @@ The following steps explain how to launch an EC2 F1 instance starting from the F
 1. An ASCII art message welcomes you to your instance
 
 ##### Connect to your EC2 F1 from Windows Using PuTTy
-If you are working from windows and getting error in the while doing ssh from a terminal using .pem file. Follow the steps in last section untilyou get **IPv4 Public IP** address of the instance. After this please follow the instruction provided on the following page to convert .pem file to .ppk and connect using PuTTY
-https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/putty.h
+If you are working on Windows based machine and getting into error while doing ssh from a terminal using .pem file, the workaround is to follow the steps in last section until you get **IPv4 Public IP** address of the instance (step 1 to 3). After these steps please use the instructions provided on the following page to convert .pem file to .ppk and connect using PuTTY
+https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/putty.html
 
 #### Installing a GUI Desktop
 
