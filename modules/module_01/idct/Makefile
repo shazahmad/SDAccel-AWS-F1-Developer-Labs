@@ -18,8 +18,8 @@ help::
 ## Several supported platforms are liste here.
 ## Or you can add other platfom and set PLATFORM variable to it
 
-PLATFORM := $(AWS_PLATFORM)
-#PLATFORM := xilinx_u200_xdma_201830_2
+#PLATFORM := $(AWS_PLATFORM)
+PLATFORM := xilinx_u200_xdma_201830_2
 #PLATFORM := xilinx_aws-vu9p-f1-04261818_dynamic_5_0
 
 ENABLE_STALL_TRACE ?= no
@@ -34,9 +34,6 @@ TARGET := sw_emu
 ## Please keep it unchanged.
 HOST_EXE := host.exe
 XO_NAME := krnl_idct.$(TARGET)
-XO_NAME_NOFLOW := krnl_idct_noflow.$(TARGET)
-XO_NAME_MED := krnl_idct_med.$(TARGET)
-XO_NAME_SLOW := krnl_idct_slow.$(TARGET)
 XCLBIN := krnl_idct.$(TARGET).awsxclbin
 
 SRC_REPO := ./src
@@ -70,9 +67,6 @@ HOST_SRC_CPP += $(SRC_REPO)/idct.cpp
 ## Kernel Source Files repository
 
 KERNEL_SRC_CPP := $(SRC_REPO)/krnl_idct.cpp
-KERNEL_NOFLOW_SRC_CPP := $(SRC_REPO)/krnl_idct_noflow.cpp
-KERNEL_MED_SRC_CPP := $(SRC_REPO)/krnl_idct_med.cpp
-KERNEL_SLOW_SRC_CPP := $(SRC_REPO)/krnl_idct_slow.cpp
 KERNEL_INCLUDES = -I$(SRC_REPO)
 # Host Compiler Global Settings and Include Libraries
 
@@ -139,27 +133,10 @@ $(BUILD_DIR)/$(XO_NAME).xo: $(KERNEL_SRC_CPP)
 	mkdir -p $(BUILD_DIR)
 	v++ $(VPPFLAGS) -c -k krnl_idct $(KERNEL_INCLUDES) $(KERNEL_SRC_CPP) -o $@
 
-$(BUILD_DIR)/$(XO_NAME_NOFLOW).xo: $(KERNEL_NOFLOW_SRC_CPP)
-	mkdir -p $(BUILD_DIR)
-	v++ $(VPPFLAGS) -c -k krnl_idct_noflow $(KERNEL_INCLUDES) $(KERNEL_NOFLOW_SRC_CPP) -o $@
-
-$(BUILD_DIR)/$(XO_NAME_MED).xo: $(KERNEL_MED_SRC_CPP)
-	mkdir -p $(BUILD_DIR)
-	v++ $(VPPFLAGS) -c -k krnl_idct_med $(KERNEL_INCLUDES) $(KERNEL_MED_SRC_CPP) -o $@
-
-$(BUILD_DIR)/$(XO_NAME_SLOW).xo: $(KERNEL_SLOW_SRC_CPP)
-	mkdir -p $(BUILD_DIR)
-	v++ $(VPPFLAGS) -c -k krnl_idct_slow $(KERNEL_INCLUDES) $(KERNEL_SLOW_SRC_CPP) -o $@
-
-#$(BUILD_DIR)/$(XO_NAME_MED).xo $(BUILD_DIR)/$(XO_NAME_SLOW).xo
-
-$(BUILD_DIR)/$(XCLBIN): $(BUILD_DIR)/$(XO_NAME).xo $(BUILD_DIR)/$(XO_NAME_MED).xo $(BUILD_DIR)/$(XO_NAME_SLOW).xo $(BUILD_DIR)/$(XO_NAME_NOFLOW).xo
-
+$(BUILD_DIR)/$(XCLBIN): $(BUILD_DIR)/$(XO_NAME).xo 
 	mkdir -p $(BUILD_DIR)
 	mkdir -p $(BUILD_DIR)/$(TARGET)
-	v++ $(VPPFLAGS) -l -o $@ $(BUILD_DIR)/$(XO_NAME).xo $(BUILD_DIR)/$(XO_NAME_MED).xo $(BUILD_DIR)/$(XO_NAME_SLOW).xo $(BUILD_DIR)/$(XO_NAME_NOFLOW).xo
-	
-#$(BUILD_DIR)/$(XO_NAME_MED).xo $(BUILD_DIR)/$(XO_NAME_SLOW).xo
+	v++ $(VPPFLAGS) -l -o $@ $(BUILD_DIR)/$(XO_NAME).xo 	
 
 ## Emulation Files Generation
 

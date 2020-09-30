@@ -64,7 +64,29 @@ EVENTS_AND_WAIT_LISTS:
 	OCL_CHECK(err, err = krnl_idct.setArg(4, batchSize));
     bool schedulingBufferFull = false;
     unsigned int earlyKernelEnqPtr;
+    
+    cl_mem_ext_ptr_t extPtrInput[2];
+    cl_mem_ext_ptr_t extPtrOuput[2];
+    cl_mem_ext_ptr_t extPtrCoeffs[2];
 
+
+    extPtrInput[0].param = 0;
+    extPtrInput[0].flags = 0 | XCL_MEM_TOPOLOGY; // DDR[0];
+    extPtrInput[1].param = 0;
+    extPtrInput[1].flags = 2 | XCL_MEM_TOPOLOGY; // DDR[2];
+
+    extPtrCoeffs[0].param = 0;
+    extPtrCoeffs[0].flags = 0 | XCL_MEM_TOPOLOGY; // DDR[0];
+    extPtrCoeffs[0].obj = &coeffs[0];
+    extPtrCoeffs[1].param = 0;
+    extPtrCoeffs[1].flags = 2 | XCL_MEM_TOPOLOGY; // DDR[2];
+    extPtrCoeffs[1].obj = &coeffs[0];
+
+    extPtrOuput[0].param = 0;
+    extPtrOuput[0].flags = 1 | XCL_MEM_TOPOLOGY; // DDR[1];
+    extPtrOuput[1].param = 0;
+    extPtrOuput[1].flags = 3 | XCL_MEM_TOPOLOGY; // DDR[3];
+    
 BATCH_PROCESSING_LOOP:
 	for (int batch_no = 0; batch_no <totalNumOfBatches ; ++batch_no)
 	{
@@ -79,27 +101,28 @@ BATCH_PROCESSING_LOOP:
             (kernelWaitList[earlyKernelEnqPtr]).clear();
             (readBackWaitList[earlyKernelEnqPtr]).clear();
         }
-        
+        extPtrInput[earlyKernelEnqPtr % 2].obj =  &inputData[batch_no * (batchSizeBytes/sizeof(int16_t))];
+        extPtrOuput[earlyKernelEnqPtr % 2].obj = &fpgaOutput[batch_no * (batchSizeBytes/sizeof(int16_t))];
         OCL_CHECK(err,
 				inputDataBuffer[earlyKernelEnqPtr] = 
 		                      cl::Buffer(context,
-		                                 CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR,
+		                                 CL_MEM_EXT_PTR_XILINX | CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR,
 		                                 batchSizeBytes,
-		                                 &inputData[batch_no * (batchSizeBytes/sizeof(int16_t))],
+		                                 &extPtrInput[earlyKernelEnqPtr % 2],
 		                                 &err));
 		OCL_CHECK(err,
 				qInputDataBuffer[earlyKernelEnqPtr] = 
 		                      cl::Buffer(context,
-		                                 CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR,
+		                                 CL_MEM_EXT_PTR_XILINX | CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR,
 		                                 qDataSizeBytes,
-		                                 &coeffs[0],
+		                                 &extPtrCoeffs[earlyKernelEnqPtr % 2],
 		                                 &err));
 		OCL_CHECK(err,
 				fpgaOutputDataBuffer[earlyKernelEnqPtr] = 
 		                      cl::Buffer(context,
-		                    		     CL_MEM_WRITE_ONLY | CL_MEM_USE_HOST_PTR,
+		                    		     CL_MEM_EXT_PTR_XILINX | CL_MEM_WRITE_ONLY | CL_MEM_USE_HOST_PTR,
 		                    		     batchSizeBytes,
-		                    		     &fpgaOutput[batch_no * (batchSizeBytes/sizeof(int16_t))],
+		                    		     &extPtrOuput[earlyKernelEnqPtr%2],
 		                                 &err));
 
 		// Set the kernel arguments
